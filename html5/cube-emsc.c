@@ -24,11 +24,11 @@ typedef struct {
     hmm_mat4 mvp;
 } params_t;
 
-static void draw();
+static EM_BOOL draw(double time, void* user_data);
 
 int main() {
     /* setup WebGL context */
-    emsc_init("#canvas", EMSC_ANTIALIAS);
+    emsc_init("canvas", EMSC_ANTIALIAS);
 
     /* setup sokol_gfx */
     sg_desc desc = {0};
@@ -132,12 +132,12 @@ int main() {
     });
 
     /* hand off control to browser loop */
-    emscripten_set_main_loop(draw, 0, 1);
+    emscripten_request_animation_frame_loop(draw, 0);
     return 0;
 }
 
 /* draw one frame */ 
-void draw() {
+EM_BOOL draw(double time, void* user_data) {
     /* compute model-view-projection matrix for vertex shader */
     hmm_mat4 proj = HMM_Perspective(60.0f, (float)emsc_width()/(float)emsc_height(), 0.01f, 10.0f);
     hmm_mat4 view = HMM_LookAt(HMM_Vec3(0.0f, 1.5f, 6.0f), HMM_Vec3(0.0f, 0.0f, 0.0f), HMM_Vec3(0.0f, 1.0f, 0.0f));
@@ -158,4 +158,5 @@ void draw() {
     sg_draw(0, 36, 1);
     sg_end_pass();
     sg_commit();
+    return EM_TRUE;
 }

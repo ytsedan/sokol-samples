@@ -10,13 +10,12 @@
 #include "sokol_gfx.h"
 #include "emsc.h"
 
-sg_pass_action pass_action;
-
-void draw();
+static sg_pass_action pass_action;
+static EM_BOOL draw(double time, void* user_data);
 
 int main() {
     /* setup WebGL1 context, no antialiasing */
-    emsc_init("#canvas", EMSC_NONE);
+    emsc_init("canvas", EMSC_NONE);
 
     /* setup sokol_gfx */
     sg_desc desc = {0};
@@ -28,11 +27,11 @@ int main() {
         .colors[0] = { .action = SG_ACTION_CLEAR, .val = { 1.0f, 0.0f, 0.0f, 1.0f } }
     };
 
-    emscripten_set_main_loop(draw, 0, 1);
+    emscripten_request_animation_frame_loop(draw, 0);
     return 0;
 }
 
-void draw() {
+EM_BOOL draw(double time, void* user_data) {
     /* animate clear colors */
     float g = pass_action.colors[0].val[1] + 0.01f;
     if (g > 1.0f) g = 0.0f;
@@ -42,4 +41,6 @@ void draw() {
     sg_begin_default_pass(&pass_action, emsc_width(), emsc_height());
     sg_end_pass();
     sg_commit();
+
+    return EM_TRUE;
 }
