@@ -12,13 +12,11 @@
 #define SOKOL_IMPL
 #define SOKOL_GLES2
 #include "sokol_gfx.h"
-#include "sokol_time.h"
 #include "emsc.h"
 
 static const int MaxVertices = (1<<16);
 static const int MaxIndices = MaxVertices * 3;
 
-static uint64_t last_time = 0;
 static bool show_test_window = true;
 static bool show_another_window = false;
 
@@ -39,8 +37,7 @@ int main() {
     /* setup WebGL context */
     emsc_init("canvas", EMSC_NONE);
 
-    /* setup sokol_gfx and sokol_time */
-    stm_setup();
+    /* setup sokol_gfx */
     sg_desc desc = { };
     sg_setup(&desc);
     assert(sg_isvalid());
@@ -128,8 +125,8 @@ int main() {
         });
     emscripten_set_mousemove_callback("canvas", nullptr, true, 
         [](int, const EmscriptenMouseEvent* e, void*)->EM_BOOL {
-            ImGui::GetIO().MousePos.x = (float) e->canvasX;
-            ImGui::GetIO().MousePos.y = (float) e->canvasY;
+            ImGui::GetIO().MousePos.x = (float) e->targetX;
+            ImGui::GetIO().MousePos.y = (float) e->targetY;
             return true;
         });
     emscripten_set_wheel_callback("canvas", nullptr, true, 
@@ -235,7 +232,7 @@ int main() {
 EM_BOOL draw(double time, void* user_data) {
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = ImVec2(float(emsc_width()), float(emsc_height()));
-    io.DeltaTime = (float) stm_sec(stm_laptime(&last_time));
+    io.DeltaTime = 1.0f / 60.0f;
     // this mouse button handling fixes the problem when down- and up-events 
     // happen in the same frame
     for (int i = 0; i < 3; i++) {
