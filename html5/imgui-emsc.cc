@@ -92,7 +92,7 @@ int main() {
             ImGui::GetIO().AddInputCharacter((ImWchar)e->charCode);
             return true;
         });
-    emscripten_set_mousedown_callback("#canvas", nullptr, true, 
+    emscripten_set_mousedown_callback("canvas", nullptr, true, 
         [](int, const EmscriptenMouseEvent* e, void*)->EM_BOOL {
             switch (e->button) {
                 case 0: btn_down[0] = true; break;
@@ -100,7 +100,7 @@ int main() {
             }
             return true;
         });
-    emscripten_set_mouseup_callback("#canvas", nullptr, true, 
+    emscripten_set_mouseup_callback("canvas", nullptr, true, 
         [](int, const EmscriptenMouseEvent* e, void*)->EM_BOOL {
             switch (e->button) {
                 case 0: btn_up[0] = true; break;
@@ -108,7 +108,7 @@ int main() {
             }
             return true;
         });
-    emscripten_set_mouseenter_callback("#canvas", nullptr, true,
+    emscripten_set_mouseenter_callback("canvas", nullptr, true,
         [](int, const EmscriptenMouseEvent* e, void*)->EM_BOOL {
             auto& io = ImGui::GetIO();
             for (int i = 0; i < 3; i++) {
@@ -117,7 +117,7 @@ int main() {
             }
             return true;
         });
-    emscripten_set_mouseleave_callback("#canvas", nullptr, true,
+    emscripten_set_mouseleave_callback("canvas", nullptr, true,
         [](int, const EmscriptenMouseEvent* e, void*)->EM_BOOL {
             auto& io = ImGui::GetIO();
             for (int i = 0; i < 3; i++) {
@@ -126,13 +126,13 @@ int main() {
             }
             return true;
         });
-    emscripten_set_mousemove_callback("#canvas", nullptr, true, 
+    emscripten_set_mousemove_callback("canvas", nullptr, true, 
         [](int, const EmscriptenMouseEvent* e, void*)->EM_BOOL {
             ImGui::GetIO().MousePos.x = (float) e->canvasX;
             ImGui::GetIO().MousePos.y = (float) e->canvasY;
             return true;
         });
-    emscripten_set_wheel_callback("#canvas", nullptr, true, 
+    emscripten_set_wheel_callback("canvas", nullptr, true, 
         [](int, const EmscriptenWheelEvent* e, void*)->EM_BOOL {
             ImGui::GetIO().MouseWheelH = -0.1f * (float)e->deltaX;
             ImGui::GetIO().MouseWheel = -0.1f * (float)e->deltaY;
