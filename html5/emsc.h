@@ -35,7 +35,7 @@ void emsc_init(const char* canvas_name, int flags) {
     if (flags & EMSC_TRY_WEBGL2) {
         attrs.majorVersion = 2;
     }
-    ctx = emscripten_webgl_create_context("canvas", &attrs);
+    ctx = emscripten_webgl_create_context(_emsc_canvas_name, &attrs);
     if ((flags & EMSC_TRY_WEBGL2) && ctx) {
         _emsc_is_webgl2 = true;
     }

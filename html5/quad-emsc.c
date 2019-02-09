@@ -16,11 +16,11 @@ static sg_pass_action pass_action = {
 static sg_pipeline pip;
 static sg_bindings bind;
 
-void draw();
+static EM_BOOL draw(double time, void* user_data);
 
 int main() {
     /* setup WebGL context */
-    emsc_init("#canvas", EMSC_NONE);
+    emsc_init("canvas", EMSC_NONE);
 
     /* setup sokol_gfx */
     sg_desc desc = {0};
@@ -84,16 +84,17 @@ int main() {
     });
 
     /* hand off control to browser loop */
-    emscripten_set_main_loop(draw, 0, 1);
+    emscripten_request_animation_frame_loop(draw, 0);
     return 0;
 }
 
 /* draw one frame */
-void draw() {
+EM_BOOL draw(double time, void* user_data) {
     sg_begin_default_pass(&pass_action, emsc_width(), emsc_height());
     sg_apply_pipeline(pip);
     sg_apply_bindings(&bind);
     sg_draw(0, 6, 1);
     sg_end_pass();
     sg_commit();
+    return EM_TRUE;
 }

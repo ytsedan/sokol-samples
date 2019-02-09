@@ -37,12 +37,12 @@ typedef struct {
     hmm_vec2 offset;
 } params_t;
 
-static void draw();
-static void draw_webgl_fallback();
+static EM_BOOL draw(double time, void* user_data);
+static EM_BOOL draw_webgl_fallback(double time, void* user_data);
 
 int main() {
     /* setup WebGL context */
-    emsc_init("#canvas", EMSC_TRY_WEBGL2|EMSC_ANTIALIAS);
+    emsc_init("canvas", EMSC_TRY_WEBGL2|EMSC_ANTIALIAS);
 
     /* setup sokol_gfx */
     sg_desc desc = {
@@ -57,7 +57,7 @@ int main() {
         default_pass_action = (sg_pass_action){
             .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.5f, 0.0f, 0.0f, 1.0f} }
         };
-        emscripten_set_main_loop(draw_webgl_fallback, 0, 1);
+        emscripten_request_animation_frame_loop(draw_webgl_fallback, 0);
         return 0;
     }
 
@@ -329,11 +329,11 @@ int main() {
     };
 
     /* hand off control to browser-loop */
-    emscripten_set_main_loop(draw, 0, 1);
+    emscripten_request_animation_frame_loop(draw, 0);
     return 0;
 }
 
-void draw() {
+EM_BOOL draw(double time, void* user_data) {
     offscreen_params_t offscreen_params;
     params_t params;
 
@@ -372,14 +372,17 @@ void draw() {
     }
     sg_end_pass();
     sg_commit();
+
+    return EM_TRUE;
 }
 
 /* this is used as draw callback if webgl2 is not supported */
-void draw_webgl_fallback() {
+EM_BOOL draw_webgl_fallback(double time, void* user_data) {
     float g = default_pass_action.colors[0].val[1] + 0.01f;
     if (g > 0.5f) g = 0.0f;
     default_pass_action.colors[0].val[1] = g;
     sg_begin_default_pass(&default_pass_action, emsc_width(), emsc_height());
     sg_end_pass();
     sg_commit();
+    return EM_TRUE;
 }

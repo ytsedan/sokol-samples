@@ -28,12 +28,12 @@ typedef struct {
 #define IMG_WIDTH (16)
 #define IMG_HEIGHT (16)
 
-static void draw();
-static void draw_webgl_fallback();
+static EM_BOOL draw(double time, void* user_data);
+static EM_BOOL draw_webgl_fallback(double time, void* user_data);
 
 int main() {
     /* setup WebGL2 context */
-    emsc_init("#canvas", EMSC_TRY_WEBGL2|EMSC_ANTIALIAS);
+    emsc_init("canvas", EMSC_TRY_WEBGL2|EMSC_ANTIALIAS);
     /* setup sokol_gfx */
     sg_desc desc = {
         .gl_force_gles2 = emsc_webgl_fallback()
@@ -47,7 +47,7 @@ int main() {
         pass_action = (sg_pass_action){
             .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.5f, 0.0f, 0.0f, 1.0f} }
         };
-        emscripten_set_main_loop(draw_webgl_fallback, 0, 1);
+        emscripten_request_animation_frame_loop(draw_webgl_fallback, 0);
         return 0;
     }
 
@@ -211,11 +211,11 @@ int main() {
         .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.0f, 0.0f, 0.0f, 1.0f} }
     };
     
-    emscripten_set_main_loop(draw, 0, 1);
+    emscripten_request_animation_frame_loop(draw, 0);
     return 0;
 }
 
-void draw() {
+EM_BOOL draw(double time, void* user_data) {
     /* rotated model matrix */
     rx += 0.25f; ry += 0.5f;
     hmm_mat4 rxm = HMM_Rotate(rx, HMM_Vec3(1.0f, 0.0f, 0.0f));
@@ -242,14 +242,16 @@ void draw() {
     sg_end_pass();
     sg_commit();
     frame_index++;
+    return EM_TRUE;
 }
 
 /* this is used as draw callback if webgl2 is not supported */
-void draw_webgl_fallback() {
+EM_BOOL draw_webgl_fallback(double time, void* user_data) {
     float g = pass_action.colors[0].val[1] + 0.01f;
     if (g > 0.5f) g = 0.0f;
     pass_action.colors[0].val[1] = g;
     sg_begin_default_pass(&pass_action, emsc_width(), emsc_height());
     sg_end_pass();
     sg_commit();
+    return EM_TRUE;
 }

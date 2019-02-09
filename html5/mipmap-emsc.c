@@ -46,11 +46,11 @@ static sg_bindings bind;
 static sg_image img[12];
 static float r;
 
-static void draw();
+static EM_BOOL draw(double time, void* user_data);
 
 int main() {
     /* try to setup WebGL2 context (for the mipmap min/max lod stuff) */
-    emsc_init("#canvas", EMSC_TRY_WEBGL2|EMSC_ANTIALIAS);
+    emsc_init("canvas", EMSC_TRY_WEBGL2|EMSC_ANTIALIAS);
 
     /* setup sokol_gfx */
     sg_desc desc = {
@@ -163,11 +163,11 @@ int main() {
     });
 
     /* hand off control to browser loop */
-    emscripten_set_main_loop(draw, 0, 1);
+    emscripten_request_animation_frame_loop(draw, 0);
     return 0;
 }
 
-void draw() {
+EM_BOOL draw(double time, void* user_data) {
     /* view-projection matrix */
     hmm_mat4 proj = HMM_Perspective(90.0f, (float)emsc_width()/(float)emsc_height(), 0.01f, 10.0f);
     hmm_mat4 view = HMM_LookAt(HMM_Vec3(0.0f, 0.0f, 5.0f), HMM_Vec3(0.0f, 0.0f, 0.0f), HMM_Vec3(0.0f, 1.0f, 0.0f));
@@ -192,4 +192,5 @@ void draw() {
     }
     sg_end_pass();
     sg_commit();
+    return EM_TRUE;
 }

@@ -34,11 +34,11 @@ static int cur_num_particles = 0;
 static hmm_vec3 pos[MAX_PARTICLES];
 static hmm_vec3 vel[MAX_PARTICLES];
 
-static void draw();
+static EM_BOOL draw(double time, void* user_data);
 
 int main() {
     /* setup WebGL context */
-    emsc_init("#canvas", EMSC_ANTIALIAS);
+    emsc_init("canvas", EMSC_ANTIALIAS);
 
     /* setup sokol_gfx */
     sg_desc desc = {0};
@@ -134,12 +134,12 @@ int main() {
     });
 
     /* hand off control to browser loop */
-    emscripten_set_main_loop(draw, 0, 1);
+    emscripten_request_animation_frame_loop(draw, 0);
     return 0;
 }
 
 /* draw one frame */ 
-void draw() {
+EM_BOOL draw(double time, void* user_data) {
     const float frame_time = 1.0f / 60.0f;
 
     /* emit new particles */
@@ -190,4 +190,6 @@ void draw() {
     sg_draw(0, 24, cur_num_particles);
     sg_end_pass();
     sg_commit();
+
+    return EM_TRUE;
 }

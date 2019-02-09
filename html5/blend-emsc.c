@@ -36,11 +36,11 @@ static sg_pass_action pass_action = {
     .stencil.action = SG_ACTION_DONTCARE
 };
 
-static void draw();
+static EM_BOOL draw(double time, void* user_data);
 
 int main() {
     /* setup WebGL context */
-    emsc_init("#canvas", EMSC_ANTIALIAS);
+    emsc_init("canvas", EMSC_ANTIALIAS);
 
     /* setup sokol_gfx (need to increase pipeline pool size) */
     sg_desc desc = {
@@ -176,11 +176,11 @@ int main() {
     }
 
     /* hand off control to browser loop */
-    emscripten_set_main_loop(draw, 0, 1);
+    emscripten_request_animation_frame_loop(draw, 0);
     return 0;
 }
 
-void draw() {
+EM_BOOL draw(double time, void* user_data) {
     /* compute view-proj matrix from current width/height */
     hmm_mat4 proj = HMM_Perspective(90.0f, (float)emsc_width()/(float)emsc_height(), 0.01f, 100.0f);
     hmm_mat4 view = HMM_LookAt(HMM_Vec3(0.0f, 0.0f, 25.0f), HMM_Vec3(0.0f, 0.0f, 0.0f), HMM_Vec3(0.0f, 1.0f, 0.0f));
@@ -216,4 +216,6 @@ void draw() {
     sg_commit();
     r += 0.6f;
     fs_params.tick += 1.0f;
+
+    return EM_TRUE;
 }
