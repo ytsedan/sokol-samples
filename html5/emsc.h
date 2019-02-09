@@ -42,7 +42,7 @@ void emsc_init(const char* canvas_name, int flags) {
     if (!ctx) {
         /* WebGL2 not supported, fall back to WebGL */
         attrs.majorVersion = 1;
-        ctx = emscripten_webgl_create_context(0, &attrs);
+        ctx = emscripten_webgl_create_context(_emsc_canvas_name, &attrs);
     }
     emscripten_webgl_make_context_current(ctx);
 }
