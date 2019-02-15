@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "sokol_app.h"
 #include "sokol_gfx.h"
+#include "sokol_time.h"
 #include "imgui.h"
 
 /* even though we use 16-bit indices, the vertex buffer may hold
@@ -20,6 +21,7 @@ static sg_pipeline pip;
 static sg_bindings bind;
 static bool btn_down[SAPP_MAX_MOUSEBUTTONS];
 static bool btn_up[SAPP_MAX_MOUSEBUTTONS];
+static uint64_t last_time;
 
 typedef struct {
     ImVec2 disp_size;
@@ -42,6 +44,7 @@ void init(void) {
     desc.d3d11_depth_stencil_view_cb = sapp_d3d11_get_depth_stencil_view;
     desc.gl_force_gles2 = sapp_gles2();
     sg_setup(&desc);
+    stm_setup();
 
     // setup Dear Imgui 
     ImGui::CreateContext();
@@ -144,7 +147,7 @@ void frame(void) {
 
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = ImVec2(float(cur_width), float(cur_height));
-    io.DeltaTime = 1.0f / 60.0f; 
+    io.DeltaTime = (float) stm_sec(stm_laptime(&last_time));
     for (int i = 0; i < SAPP_MAX_MOUSEBUTTONS; i++) {
         if (btn_down[i]) {
             btn_down[i] = false;

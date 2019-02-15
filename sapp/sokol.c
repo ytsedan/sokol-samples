@@ -10,6 +10,4 @@
 #include "sokol_app.h"
 #include "sokol_gfx.h"
 #include "sokol_audio.h"
-#if !defined(__EMSCRIPTEN__)
 #include "sokol_time.h"
-#endif
