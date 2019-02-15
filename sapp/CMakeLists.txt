@@ -163,7 +163,6 @@ fips_begin_app(events-sapp windowed)
     endif()
 fips_end_app()
 
-# FIXME!
 if (NOT FIPS_EMSCRIPTEN)
     fips_begin_app(modplay-sapp windowed)
         fips_vs_warning_level(3)

@@ -41,7 +41,9 @@ else()
         add_subdirectory(glfw)
     endif()
 endif()
-add_subdirectory(tests)
+if (NOT FIPS_EMSCRIPTEN)
+    add_subdirectory(tests)
+endif()
 
 fips_finish()
 
