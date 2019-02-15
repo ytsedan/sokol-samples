@@ -115,13 +115,13 @@ Another known issue: The arraytex-metal sample currently has a weird rendering a
 > fips run triangle-d3d11
 ```
 
-### To build for emscripten:
+### To build for WebAssembly:
 
 ```
 > cd ~/scratch/sokol-samples
 > ./fips setup emscripten
 [...this will take a while]
-> ./fips set config webgl2-emsc-make-release
+> ./fips set config webgl2-wasm-make-release
 > ./fips build
 ...
 > ./fips list targets
