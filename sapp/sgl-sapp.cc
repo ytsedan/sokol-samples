@@ -6,10 +6,15 @@
 #include "sokol_gfx.h"
 #define SOKOL_GL_IMPL
 #include "sokol_gl.h"
-#include "dbgui/dbgui.h"
+#include "imgui.h"
+#include "imgui_font.h"
+#define SOKOL_IMGUI_IMPL
+#include "sokol_imgui.h"
 
 #define SAMPLE_COUNT (4)
 
+static bool show_test_window = true;
+static bool show_another_window = false;
 static const sg_pass_action pass_action = {
     .colors[0] = {
         .action = SG_ACTION_CLEAR,
@@ -21,7 +26,7 @@ static sg_image img;
 static sgl_pipeline pip_3d;
 
 static void init(void) {
-    sg_setup(&(sg_desc){
+    sg_desc desc = {
         .gl_force_gles2 = sapp_gles2(),
         .mtl_device = sapp_metal_get_device(),
         .mtl_renderpass_descriptor_cb = sapp_metal_get_renderpass_descriptor,
@@ -30,13 +35,44 @@ static void init(void) {
         .d3d11_device_context = sapp_d3d11_get_device_context(),
         .d3d11_render_target_view_cb = sapp_d3d11_get_render_target_view,
         .d3d11_depth_stencil_view_cb = sapp_d3d11_get_depth_stencil_view,
-    });
-    __dbgui_setup(SAMPLE_COUNT);
+    };
+    sg_setup(&desc);
+
+    // setup sokol-imgui, but provide our own font
+    simgui_desc_t simgui_desc = { };
+    simgui_desc.no_default_font = true;
+    simgui_desc.dpi_scale = sapp_dpi_scale();
+    simgui_desc.sample_count = SAMPLE_COUNT;
+    simgui_setup(&simgui_desc);
+
+    // configure Dear ImGui with our own embedded font
+    auto& io = ImGui::GetIO();
+    ImFontConfig fontCfg;
+    fontCfg.FontDataOwnedByAtlas = false;
+    fontCfg.OversampleH = 2;
+    fontCfg.OversampleV = 2;
+    fontCfg.RasterizerMultiply = 1.5f;
+    io.Fonts->AddFontFromMemoryTTF(dump_font, sizeof(dump_font), 16.0f, &fontCfg);
+
+    // create font texture for the custom font
+    unsigned char* font_pixels;
+    int font_width, font_height;
+    io.Fonts->GetTexDataAsRGBA32(&font_pixels, &font_width, &font_height);
+    sg_image_desc img_desc = { };
+    img_desc.width = font_width;
+    img_desc.height = font_height;
+    img_desc.pixel_format = SG_PIXELFORMAT_RGBA8;
+    img_desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
+    img_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
+    img_desc.min_filter = SG_FILTER_LINEAR;
+    img_desc.mag_filter = SG_FILTER_LINEAR;
+    img_desc.content.subimage[0][0].ptr = font_pixels;
+    img_desc.content.subimage[0][0].size = font_width * font_height * 4;
+    io.Fonts->TexID = (ImTextureID)(uintptr_t) sg_make_image(&img_desc).id;
 
     /* setup sokol-gl */
-    sgl_setup(&(sgl_desc_t){
-        .sample_count = SAMPLE_COUNT
-    });
+    sgl_desc_t sgl_desc = { .sample_count = SAMPLE_COUNT };
+    sgl_setup(&sgl_desc);
 
     /* a checkerboard texture */
     uint32_t pixels[8][8];
@@ -45,29 +81,32 @@ static void init(void) {
             pixels[y][x] = ((y ^ x) & 1) ? 0xFFFFFFFF : 0xFF000000;
         }
     }
-    img = sg_make_image(&(sg_image_desc){
+    img_desc = (sg_image_desc){
         .width = 8,
         .height = 8,
         .content.subimage[0][0] = {
             .ptr = pixels,
             .size = sizeof(pixels)
         }
-    });
+    };
+    img = sg_make_image(&img_desc);
 
     /* create a pipeline object for 3d rendering, with less-equal
        depth-test and cull-face enabled, not that we don't provide
        a shader, vertex-layout, pixel formats and sample count here,
        these are all filled in by sokol-gl
     */
-    pip_3d = sgl_make_pipeline(&(sg_pipeline_desc){
+    sg_pipeline_desc pip_desc = {
         .depth_stencil = {
             .depth_write_enabled = true,
             .depth_compare_func = SG_COMPAREFUNC_LESS_EQUAL,
         },
         .rasterizer = {
-            .cull_mode = SG_CULLMODE_BACK
+            .cull_mode = SG_CULLMODE_BACK,
+            .sample_count = SAMPLE_COUNT
         }
-    });
+    };
+    pip_3d = sgl_make_pipeline(&pip_desc);
 }
 
 static void draw_triangle(void) {
@@ -215,6 +254,56 @@ static void frame(void) {
     draw_tex_cube();
     sgl_viewport(0, 0, dw, dh, true);
 
+    const int width = sapp_width();
+    const int height = sapp_height();
+    simgui_new_frame(width, height, 1.0/60.0);
+
+    // 1. Show a simple window
+    // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
+    static float f = 0.0f;
+    ImGui::Text("Hello, world!");
+    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+    if (ImGui::Button("Test Window")) show_test_window ^= 1;
+    if (ImGui::Button("Another Window")) show_another_window ^= 1;
+    ImGui::Text("NOTE: programmatic quit isn't supported on web and mobile");
+    if (ImGui::Button("Soft Quit")) {
+        sapp_request_quit();
+    }
+    if (ImGui::Button("Hard Quit")) {
+        sapp_quit();
+    }
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+    // 2. Show another simple window, this time using an explicit Begin/End pair
+    if (show_another_window) {
+        ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
+        ImGui::Begin("Another Window", &show_another_window);
+        ImGui::Text("Hello");
+        ImGui::End();
+    }
+
+    // 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
+    if (show_test_window) {
+        ImGui::SetNextWindowPos(ImVec2(460, 20), ImGuiSetCond_FirstUseEver);
+        ImGui::ShowTestWindow();
+    }
+
+    // 4. Prepare and conditionally open the "Really Quit?" popup
+    if (ImGui::BeginPopupModal("Really Quit?", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Do you really want to quit?\n");
+        ImGui::Separator();
+        if (ImGui::Button("OK", ImVec2(120, 0))) {
+            sapp_quit();
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SetItemDefaultFocus();
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
     /* Render the sokol-gfx default pass, all sokol-gl commands
        that happened so far are rendered inside sgl_draw(), and this
        is the only sokol-gl function that must be called inside
@@ -223,13 +312,16 @@ static void frame(void) {
     */
     sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
     sgl_draw();
-    __dbgui_draw();
+    simgui_render();
     sg_end_pass();
     sg_commit();
 }
 
+void input(const sapp_event* event) {
+    simgui_handle_event(event);
+}
+
 static void cleanup(void) {
-    __dbgui_shutdown();
     sgl_shutdown();
     sg_shutdown();
 }
@@ -239,10 +331,11 @@ sapp_desc sokol_main(int argc, char* argv[]) {
         .init_cb = init,
         .frame_cb = frame,
         .cleanup_cb = cleanup,
-        .event_cb = __dbgui_event,
-        .width = 512,
-        .height = 512,
+        .event_cb = input,
+        .width = 1024,
+        .height = 768,
         .sample_count = SAMPLE_COUNT,
+        .high_dpi = true,
         .gl_force_gles2 = true,
         .window_title = "sokol_gl.h (sokol-app)",
     };
