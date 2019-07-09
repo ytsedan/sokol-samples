@@ -246,13 +246,13 @@ static void frame(void) {
     /* all sokol-gl functions except sgl_draw() can be called anywhere in the frame */
     sgl_viewport(x0, y0, ww, hh, true);
     draw_triangle();
-    sgl_viewport(x1, y0, ww, hh, true);
-    draw_quad();
-    sgl_viewport(x0, y1, ww, hh, true);
-    draw_cubes();
-    sgl_viewport(x1, y1, ww, hh, true);
-    draw_tex_cube();
-    sgl_viewport(0, 0, dw, dh, true);
+//    sgl_viewport(x1, y0, ww, hh, true);
+//    draw_quad();
+//    sgl_viewport(x0, y1, ww, hh, true);
+//    draw_cubes();
+//    sgl_viewport(x1, y1, ww, hh, true);
+//    draw_tex_cube();
+//    sgl_viewport(0, 0, dw, dh, true);
 
     const int width = sapp_width();
     const int height = sapp_height();
