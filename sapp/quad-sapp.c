@@ -1,17 +1,17 @@
-//------------------------------------------------------------------------------
-//  quad-sapp.c
-//  Simple 2D rendering with vertex- and index-buffer.
-//------------------------------------------------------------------------------
 #include "sokol_app.h"
 #include "sokol_gfx.h"
 #include "dbgui/dbgui.h"
 #include "quad-sapp.glsl.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 static sg_pass_action pass_action = {
     .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.0f, 0.0f, 0.0f, 1.0f } }
 };
 static sg_pipeline pip;
 static sg_bindings bind;
+static bool do_jiggle;
+static bool update_in_frame;
 
 void init(void) {
     sg_setup(&(sg_desc){
@@ -32,13 +32,14 @@ void init(void) {
         -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f,
          0.5f,  0.5f, 0.5f,     0.0f, 1.0f, 0.0f, 1.0f,
          0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f,     1.0f, 1.0f, 0.0f, 1.0f,        
+        -0.5f, -0.5f, 0.5f,     1.0f, 1.0f, 0.0f, 1.0f,
     };
     bind.vertex_buffers[0] = sg_make_buffer(&(sg_buffer_desc){
         .size = sizeof(vertices),
-        .content = vertices,
-        .label = "quad-vertices"
+        .label = "quad-vertices",
+        .usage = SG_USAGE_DYNAMIC
     });
+    sg_update_buffer(bind.vertex_buffers[0], vertices, sizeof(vertices));
 
     /* an index buffer with 2 triangles */
     uint16_t indices[] = { 0, 1, 2,  0, 2, 3 };
@@ -66,7 +67,33 @@ void init(void) {
     });
 }
 
+double rand_between(double min, double max) {
+    return ((double)rand()/RAND_MAX) * (max - min) + min;
+}
+
+void jiggle() {
+    float vertices[] = {
+        // positions            colors
+        -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f, 0.5f,     0.0f, 1.0f, 0.0f, 1.0f,
+         0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
+        -0.5f, -0.5f, 0.5f,     1.0f, 1.0f, 0.0f, 1.0f,
+    };
+    for (int i = 0; i < 28; i += 7) {
+        vertices[i] += rand_between(-0.1, 0.1);
+        vertices[i + 1] += rand_between(-0.1, 0.1);
+    }
+    sg_update_buffer(bind.vertex_buffers[0], vertices, sizeof(vertices));
+}
+
 void frame(void) {
+    if (do_jiggle)
+    {
+        do_jiggle = false;
+        printf("jigging in frame callback\n");
+        jiggle();
+    }
+
     sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
     sg_apply_pipeline(pip);
     sg_apply_bindings(&bind);
@@ -74,6 +101,24 @@ void frame(void) {
     __dbgui_draw();
     sg_end_pass();
     sg_commit();
+}
+
+void event(const sapp_event* evt, void* ud) {
+    __dbgui_event(evt);
+    if (evt->type == SAPP_EVENTTYPE_KEY_UP) {
+        if (evt->key_code == SAPP_KEYCODE_J) {
+            if (update_in_frame) {
+                do_jiggle = true;
+            } else {
+                printf("jigging in event callback\n");
+                jiggle();
+            }
+        }
+        if (evt->key_code == SAPP_KEYCODE_T) {
+            update_in_frame = !update_in_frame;
+            printf("doing jiggle in frame callback: %d\n", update_in_frame);
+        }
+    }
 }
 
 void cleanup(void) {
@@ -85,8 +130,8 @@ sapp_desc sokol_main(int argc, char* argv[]) {
     return (sapp_desc){
         .init_cb = init,
         .frame_cb = frame,
+        .event_userdata_cb = event,
         .cleanup_cb = cleanup,
-        .event_cb = __dbgui_event,
         .width = 800,
         .height = 600,
         .gl_force_gles2 = true,
