@@ -80,8 +80,8 @@ void jiggle() {
         -0.5f, -0.5f, 0.5f,     1.0f, 1.0f, 0.0f, 1.0f,
     };
     for (int i = 0; i < 28; i += 7) {
-        vertices[i] += rand_between(-0.1, 0.1);
-        vertices[i + 1] += rand_between(-0.1, 0.1);
+        vertices[i] += (float) rand_between(-0.1, 0.1);
+        vertices[i + 1] += (float) rand_between(-0.1, 0.1);
     }
     sg_update_buffer(bind.vertex_buffers[0], vertices, sizeof(vertices));
 }
