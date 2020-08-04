@@ -66,7 +66,7 @@ int main() {
         .type = SG_IMAGETYPE_ARRAY,
         .width = IMG_WIDTH,
         .height = IMG_HEIGHT,
-        .layers = IMG_LAYERS,
+        .num_layers = IMG_LAYERS,
         .pixel_format = SG_PIXELFORMAT_RGBA8,
         .min_filter = SG_FILTER_LINEAR,
         .mag_filter = SG_FILTER_LINEAR,
@@ -84,7 +84,7 @@ int main() {
          1.0f,  1.0f, -1.0f,    1.0f, 1.0f,
         -1.0f,  1.0f, -1.0f,    0.0f, 1.0f,
 
-        -1.0f, -1.0f,  1.0f,    0.0f, 0.0f, 
+        -1.0f, -1.0f,  1.0f,    0.0f, 0.0f,
          1.0f, -1.0f,  1.0f,    1.0f, 0.0f,
          1.0f,  1.0f,  1.0f,    1.0f, 1.0f,
         -1.0f,  1.0f,  1.0f,    0.0f, 1.0f,
@@ -186,7 +186,7 @@ int main() {
             .attrs = {
                 [0].format=SG_VERTEXFORMAT_FLOAT3,
                 [1].format=SG_VERTEXFORMAT_FLOAT2
-            } 
+            }
         },
         .shader = shd,
         .index_type = SG_INDEXTYPE_UINT16,
@@ -198,10 +198,10 @@ int main() {
     });
 
     /* default pass action */
-    sg_pass_action pass_action = { 
+    sg_pass_action pass_action = {
         .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.0f, 0.0f, 0.0f, 1.0f} }
     };
-    
+
     /* view-projection matrix */
     hmm_mat4 proj = HMM_Perspective(60.0f, (float)WIDTH/(float)HEIGHT, 0.01f, 10.0f);
     hmm_mat4 view = HMM_LookAt(HMM_Vec3(0.0f, 1.5f, 6.0f), HMM_Vec3(0.0f, 0.0f, 0.0f), HMM_Vec3(0.0f, 1.0f, 0.0f));
