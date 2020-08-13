@@ -4,7 +4,7 @@
 //  This demonstrates the SOKOL_NO_ENTRY mode of sokol_app.h, in this mode
 //  sokol_app.h doesn't "hijack" the platform's main() function instead the
 //  application must provide this. The sokol_app.h implementation must be
-//  compiled with the SOKOL_NO_ENTRY define (see sokol-noentry.c/.m, 
+//  compiled with the SOKOL_NO_ENTRY define (see sokol-noentry.c/.m,
 //  which is compiled into a static link lib sokol-noentry)
 //
 //  This sample also demonstrates the optional user-data callbacks.
@@ -38,7 +38,7 @@ void cleanup(void);
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
     (void)hInstance; (void)hPrevInstance; (void)lpCmdLine; (void)nCmdShow;
     app_state_t* state = calloc(1, sizeof(app_state_t));
-    int exit_code = sapp_run(&(sapp_desc){
+    sapp_run(&(sapp_desc){
         .user_data = state,
         .init_userdata_cb = init,
         .frame_userdata_cb = frame,
@@ -50,7 +50,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         .window_title = "Noentry DLL (sokol-app)",
     });
     free(state);    /* NOTE: on some platforms, this isn't reached on exit */
-    return exit_code;
+    return 0;
 }
 
 void init(void* user_data) {
