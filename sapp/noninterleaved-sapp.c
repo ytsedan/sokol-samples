@@ -66,10 +66,7 @@ void init(void) {
         .content = indices
     });
 
-    /*
-        a pipeline object, note that we need to provide the
-        MSAA sample count of the default framebuffer
-    */
+    /* a pipeline object */
     state.pip = sg_make_pipeline(&(sg_pipeline_desc){
         .shader = sg_make_shader(noninterleaved_shader_desc()),
         .layout = {
