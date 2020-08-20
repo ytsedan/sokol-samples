@@ -44,7 +44,7 @@ int main() {
     sg_desc desc = {0};
     sg_setup(&desc);
     assert(sg_isvalid());
-    
+
     /* vertex buffer for static geometry (goes into vertex buffer bind slot 0) */
     const float r = 0.05f;
     const float vertices[] = {
@@ -63,7 +63,7 @@ int main() {
 
     /* index buffer for static geometry */
     const uint16_t indices[] = {
-        0, 1, 2,    0, 2, 3,    0, 3, 4,    0, 4, 1,
+        2, 1, 0,    3, 2, 0,    4, 3, 0,    1, 4, 0,
         5, 1, 2,    5, 2, 3,    5, 3, 4,    5, 4, 1
     };
     sg_buffer ibuf= sg_make_buffer(&(sg_buffer_desc){
@@ -71,7 +71,7 @@ int main() {
         .size = sizeof(indices),
         .content = indices,
     });
-    
+
     /* empty, dynamic instance-data vertex buffer (goes into vertex buffer bind slot 1) */
     sg_buffer inst_vbuf = sg_make_buffer(&(sg_buffer_desc){
         .size = MAX_PARTICLES * sizeof(hmm_vec3),
@@ -143,7 +143,7 @@ int main() {
     return 0;
 }
 
-/* draw one frame */ 
+/* draw one frame */
 void draw() {
     const float frame_time = 1.0f / 60.0f;
 

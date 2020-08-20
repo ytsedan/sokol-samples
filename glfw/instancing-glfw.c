@@ -45,7 +45,7 @@ int main() {
     flextInit();
 
     /* setup sokol_gfx */
-    sg_desc desc = {0}; 
+    sg_desc desc = {0};
     sg_setup(&desc);
     assert(sg_isvalid());
     assert(sg_query_features().instancing);
@@ -68,7 +68,7 @@ int main() {
 
     /* index buffer for static geometry */
     const uint16_t indices[] = {
-        0, 1, 2,    0, 2, 3,    0, 3, 4,    0, 4, 1,
+        2, 1, 0,    3, 2, 0,    4, 3, 0,    1, 4, 0,
         5, 1, 2,    5, 2, 3,    5, 3, 4,    5, 4, 1
     };
     sg_buffer ibuf = sg_make_buffer(&(sg_buffer_desc){
@@ -76,7 +76,7 @@ int main() {
         .size = sizeof(indices),
         .content = indices,
     });
-    
+
     /* empty, dynamic instance-data vertex buffer (goes into vertex buffer bind slot 1) */
     sg_buffer vbuf_inst = sg_make_buffer(&(sg_buffer_desc){
         .size = MAX_PARTICLES * sizeof(hmm_vec3),
@@ -91,7 +91,7 @@ int main() {
                 [0] = { .name="mvp", .type=SG_UNIFORMTYPE_MAT4 }
             }
         },
-        .vs.source = 
+        .vs.source =
             "#version 330\n"
             "uniform mat4 mvp;\n"
             "layout(location=0) in vec3 position;\n"
