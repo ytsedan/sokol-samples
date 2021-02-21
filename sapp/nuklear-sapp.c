@@ -100,6 +100,7 @@ sapp_desc sokol_main(int argc, char* argv[]) {
         .enable_clipboard = true,
         .width = 1024,
         .height = 768,
+        //.high_dpi = true, 
         .window_title = "nuklear (sokol-app)",
         .ios_keyboard_resizes_canvas = true
     };
