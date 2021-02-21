@@ -1173,7 +1173,7 @@ struct nk_convert_config {
     float global_alpha; /* global alpha value */
     enum nk_anti_aliasing line_AA; /* line anti-aliasing flag can be turned off if you are tight on memory */
     enum nk_anti_aliasing shape_AA; /* shape anti-aliasing flag can be turned off if you are tight on memory */
-    float scale_AA; /* scaling of AA fringes for hidpi rendering */
+    float feather_AA; /* size/width of AA fringes */
     unsigned circle_segment_count; /* number of segments used for circles: default to 22 */
     unsigned arc_segment_count; /* number of segments used for arcs: default to 22 */
     unsigned curve_segment_count; /* number of segments used for curves: default to 22 */
@@ -9702,7 +9702,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
 
     if (aliasing == NK_ANTI_ALIASING_ON) {
         /* ANTI-ALIASED STROKE */
-        const float AA_SIZE = 1.0f / list->config.scale_AA;
+        const float AA_SIZE = list->config.feather_AA;
         NK_STORAGE const nk_size pnt_align = NK_ALIGNOF(struct nk_vec2);
         NK_STORAGE const nk_size pnt_size = sizeof(struct nk_vec2);
 
@@ -9941,7 +9941,7 @@ nk_draw_list_fill_poly_convex(struct nk_draw_list *list,
         nk_size i0 = 0;
         nk_size i1 = 0;
 
-        const float AA_SIZE = 1.0f / list->config.scale_AA;
+        const float AA_SIZE = list->config.feather_AA;
         nk_size vertex_offset = 0;
         nk_size index = list->vertex_count;
 
